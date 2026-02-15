@@ -1,0 +1,155 @@
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+  agents: defineTable({
+    name: v.string(),
+    role: v.string(),
+    level: v.union(v.literal("lead"), v.literal("specialist"), v.literal("intern")),
+    status: v.union(
+      v.literal("working"),
+      v.literal("idle"),
+      v.literal("blocked"),
+      v.literal("offline"),
+    ),
+    sessionKey: v.string(),
+    currentTaskId: v.optional(v.id("tasks")),
+    avatar: v.optional(v.string()),
+    tasksCompleted: v.number(),
+  }),
+
+  tasks: defineTable({
+    title: v.string(),
+    description: v.string(),
+    status: v.union(
+      v.literal("inbox"),
+      v.literal("assigned"),
+      v.literal("in_progress"),
+      v.literal("review"),
+      v.literal("done"),
+    ),
+    priority: v.union(
+      v.literal("low"),
+      v.literal("medium"),
+      v.literal("high"),
+      v.literal("urgent"),
+    ),
+    assigneeIds: v.array(v.id("agents")),
+    tags: v.array(v.string()),
+    bookingId: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    dueAt: v.optional(v.number()),
+  }),
+
+  messages: defineTable({
+    taskId: v.id("tasks"),
+    fromAgentId: v.id("agents"),
+    content: v.string(),
+    attachments: v.optional(v.array(v.id("documents"))),
+    createdAt: v.number(),
+  }),
+
+  activities: defineTable({
+    type: v.union(
+      v.literal("task_created"),
+      v.literal("task_updated"),
+      v.literal("message_sent"),
+      v.literal("document_created"),
+      v.literal("booking_enriched"),
+      v.literal("meeting_prepped"),
+      v.literal("follow_up_sent"),
+      v.literal("status_changed"),
+    ),
+    agentId: v.id("agents"),
+    taskId: v.optional(v.id("tasks")),
+    message: v.string(),
+    createdAt: v.number(),
+  }),
+
+  documents: defineTable({
+    title: v.string(),
+    content: v.string(),
+    type: v.union(
+      v.literal("meeting_brief"),
+      v.literal("lead_research"),
+      v.literal("meeting_notes"),
+      v.literal("report"),
+      v.literal("email_draft"),
+    ),
+    taskId: v.optional(v.id("tasks")),
+    agentId: v.id("agents"),
+    createdAt: v.number(),
+  }),
+
+  notifications: defineTable({
+    mentionedAgentId: v.id("agents"),
+    fromAgentId: v.optional(v.id("agents")),
+    content: v.string(),
+    taskId: v.optional(v.id("tasks")),
+    delivered: v.boolean(),
+    createdAt: v.number(),
+  }),
+
+  enrichedLeads: defineTable({
+    bookingId: v.string(),
+    contactEmail: v.string(),
+    contactName: v.string(),
+    apolloId: v.optional(v.string()),
+    photoUrl: v.optional(v.string()),
+    linkedinUrl: v.optional(v.string()),
+    headline: v.optional(v.string()),
+    title: v.optional(v.string()),
+    seniority: v.optional(v.string()),
+    location: v.optional(v.string()),
+    companyName: v.optional(v.string()),
+    companySize: v.optional(v.string()),
+    companyWebsite: v.optional(v.string()),
+    companyLinkedinUrl: v.optional(v.string()),
+    industry: v.optional(v.string()),
+    fundingStage: v.optional(v.string()),
+    estimatedEmployees: v.optional(v.number()),
+    annualRevenue: v.optional(v.number()),
+    totalFunding: v.optional(v.number()),
+    foundedYear: v.optional(v.number()),
+    twitterUrl: v.optional(v.string()),
+    githubUrl: v.optional(v.string()),
+    employmentHistory: v.optional(
+      v.array(
+        v.object({
+          organizationName: v.string(),
+          title: v.string(),
+          current: v.boolean(),
+          startDate: v.optional(v.string()),
+          endDate: v.optional(v.string()),
+        }),
+      ),
+    ),
+    salesSignals: v.optional(v.array(v.string())),
+    isLikelyToEngage: v.optional(v.boolean()),
+    leadScore: v.optional(v.number()),
+    enrichedAt: v.number(),
+  }),
+
+  bookings: defineTable({
+    calBookingId: v.string(),
+    title: v.string(),
+    startTime: v.string(),
+    endTime: v.string(),
+    attendeeEmail: v.string(),
+    attendeeName: v.string(),
+    eventType: v.string(),
+    status: v.union(
+      v.literal("confirmed"),
+      v.literal("rescheduled"),
+      v.literal("cancelled"),
+      v.literal("completed"),
+    ),
+    enrichmentStatus: v.union(
+      v.literal("pending"),
+      v.literal("in_progress"),
+      v.literal("done"),
+    ),
+    createdAt: v.number(),
+  }),
+});
